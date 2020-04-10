@@ -48,12 +48,15 @@ public class OpenGLRenderer implements Renderer {
     private int uMatrixLocation;
     private int programId;
 
+
     private float[] mProjectionMatrix = new float[16];
     private float[] mViewMatrix = new float[16];
     private float[] mModelMatrix = new float[16];
     private float[] mMatrix = new float[16];
 
     private int texture;
+    private float z1;
+    private float z2;
 
     public OpenGLRenderer(Context context) {
         this.context = context;
@@ -76,16 +79,18 @@ public class OpenGLRenderer implements Renderer {
         bindMatrix();
     }
     private void prepareData() {
+        z1 = .5f;
+        z2 = -.5f;
         float[] vertices = {
                 // вершины куба
-                (float) -0.5, (float) 0.5, (float) 0.5,     // верхняя левая ближняя
-                (float) 0.5, (float) 0.5, (float) 0.5,    // верхняя правая ближняя
-                (float) -0.5, (float) -0.5, (float) 0.5,     // нижняя левая ближняя
-                (float) 0.5, (float) -0.5, (float) 0.5,     // нижняя правая ближняя
-                (float) -0.5, (float) 0.5, (float) -0.5,     // верхняя левая дальняя
-                (float) 0.5, (float) 0.5, (float)-0.5,     // верхняя правая дальняя
-                (float)-0.5, (float)-0.5, (float)-0.5,     // нижняя левая дальняя
-                (float) 0.5, (float)-0.5, (float)-0.5      // нижняя правая дальняя
+                 -.5f,  .5f,  z1,   // верхняя левая ближняя
+                 .5f,  .5f,  z1, // верхняя правая ближняя
+                 -.5f,  -.5f,  z1,    // нижняя левая ближняя
+                 .5f,  -.5f,  z1,  // нижняя правая ближняя
+                 -.5f,  .5f,  z2,   // верхняя левая дальняя
+                 0.5f,  .5f, z2,   // верхняя правая дальняя
+                 -.5f, -.5f, z2,    // нижняя левая дальняя
+                 .5f, -.5f, z2 ,   // нижняя правая дальняя
         };
         vertexData = ByteBuffer
                 .allocateDirect(vertices.length * 4)
@@ -173,11 +178,11 @@ public class OpenGLRenderer implements Renderer {
         // точка положения камеры
         float eyeX = 0;
         float eyeY = 2;
-        float eyeZ = 4;
+        float eyeZ = 10;
         // точка направления камеры
         float centerX = 0;
         float centerY = 0;
-        float centerZ = 0;
+        float centerZ = -5;
         // up-вектор
         float upX = 0;
         float upY = 1;
@@ -190,6 +195,7 @@ public class OpenGLRenderer implements Renderer {
         glUniformMatrix4fv(uMatrixLocation, 1, false, mMatrix, 0);
     }
     long TIME = 10000L;
+    long TIMED = 1000L;
     @Override
     public void onDrawFrame(GL10 arg0) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -200,7 +206,9 @@ public class OpenGLRenderer implements Renderer {
     // вращение вокруг своей оси
     private void setModelMatrix() {
         float angle = (float)(SystemClock.uptimeMillis() % TIME) / TIME * 360;
-        Matrix.rotateM(mModelMatrix, 0, angle, 1, 1, 0);
+        float distance = (float)(SystemClock.uptimeMillis() % TIMED) / TIMED * 8;
+        Matrix.translateM(mModelMatrix, 0, 0, 0, distance);
+        Matrix.rotateM(mModelMatrix, 0, angle, 1,0, 0);
         bindMatrix();
     }
 }
