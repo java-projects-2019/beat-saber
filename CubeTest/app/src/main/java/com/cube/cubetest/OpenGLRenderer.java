@@ -43,6 +43,7 @@ public class OpenGLRenderer implements Renderer {
     private static final int STRIDE = (POSITION_COUNT
             + TEXTURE_COUNT) * 4;
 
+    private final static long TIME = 1000L;
     private Context context;
 
     private FloatBuffer vertexData;
@@ -250,16 +251,46 @@ public class OpenGLRenderer implements Renderer {
     }
 
     private void bindMatrix() {
-        Matrix.multiplyMM(mMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
+        Matrix.multiplyMM(mMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mMatrix, 0, mProjectionMatrix, 0, mMatrix, 0);
         glUniformMatrix4fv(uMatrixLocation, 1, false, mMatrix, 0);
     }
 
     @Override
     public void onDrawFrame(GL10 arg0) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        drawBackground();
         drawCube();
+        drawCube1();
+    }
 
+    private void drawCube1() {
+        Matrix.setIdentityM(mModelMatrix, 0);
+        setModelMatrix();
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 4, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 8, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 12, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 16, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 20, 4);
+    }
+
+    private void drawCube() {
+        Matrix.setIdentityM(mModelMatrix, 0);
+        setModelMatrix1();
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 4, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 8, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 12, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 16, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 20, 4);
+    }
+
+    private void drawBackground() {
+        Matrix.setIdentityM(mModelMatrix, 0);
+        bindMatrix();
         glBindTexture(GL_TEXTURE_2D, textureBackground);
         glDrawArrays(GL_TRIANGLE_STRIP,24,4 );
         glBindTexture(GL_TEXTURE_2D, textureVibe);
@@ -269,13 +300,17 @@ public class OpenGLRenderer implements Renderer {
         glBindTexture(GL_TEXTURE_2D, textureVibe1);
         glDrawArrays(GL_TRIANGLE_STRIP, 40,4);
     }
-    private void drawCube() {
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        glDrawArrays(GL_TRIANGLE_STRIP, 4, 4);
-        glDrawArrays(GL_TRIANGLE_STRIP, 8, 4);
-        glDrawArrays(GL_TRIANGLE_STRIP, 12, 4);
-        glDrawArrays(GL_TRIANGLE_STRIP, 16, 4);
-        glDrawArrays(GL_TRIANGLE_STRIP, 20, 4);
+
+    private void setModelMatrix() {
+        Matrix.translateM(mModelMatrix,0,1,0,0);
+        float distance = (float)(SystemClock.uptimeMillis() % TIME) / TIME * 7.5f;
+        Matrix.translateM(mModelMatrix, 0,0,0,distance);
+        bindMatrix();
+    }
+    private void setModelMatrix1() {
+        Matrix.translateM(mModelMatrix,0,-1,0,0);
+        float distance = (float)(SystemClock.uptimeMillis() % TIME) / TIME * 7.5f;
+        Matrix.translateM(mModelMatrix, 0,0,0,distance);
+        bindMatrix();
     }
 }
